@@ -4,6 +4,7 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using System.Web.Mvc;
 using ClassCommon.DTOs;
 using ClassCommon.Enums;
@@ -111,6 +112,7 @@ namespace UserStateful
 
             dto.Role = UserRole.USER;
             User user = new User(dto);
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             using (var transaction = stateMenager.CreateTransaction())
             {
                 await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
@@ -120,46 +122,6 @@ namespace UserStateful
             await _userDbContext.SaveChangesAsync();
             return;
         }
-
-      
-
-        //Ovde metode u mikroservisu samo komuniciraju sa bazom preko transakcije.Sva ostala logika se radi u servisu.
-
-
-        // public async Task Register(UserModel user)
-        //{
-        //    var stateMenager = this.StateManager;
-        //    var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, UserModel>>("userDictionary");
-
-        //    using (var transaction = stateMenager.CreateTransaction())
-        //    {
-        //        await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
-        //        await transaction.CommitAsync();
-        //    }
-        //    await _userDbContext.Users.AddAsync(user);
-        //    await _userDbContext.SaveChangesAsync();
-        //}
-        //public async Task<UserModel> GetUserByEmail(string email)
-        //{
-        //    var stateManager = this.StateManager;
-        //    var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, UserModel>>("userDictionary");
-
-        //    using (var transaction = stateManager.CreateTransaction())
-        //    {
-        //        var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
-
-        //        while (await enumerator.MoveNextAsync(default))
-        //        {
-        //            var user = enumerator.Current.Value;
-        //            if (user.Email == email)
-        //            {
-        //                return user;
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
-
 
         /// <summary>
         /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
