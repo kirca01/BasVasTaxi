@@ -1,9 +1,14 @@
 ﻿using API_gateway.Services;
 using ClassCommon;
 using ClassCommon.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks.Dataflow;
 
 
@@ -27,6 +32,45 @@ namespace API_gateway.Controllers
         public async Task<String> GetHelloWorld()
         {
             return await _userService.GetHelloWorld();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Login([FromBody] LoginDTO dto)
+        {
+            try
+            {
+                UserDTO user = await _userService.GetByEmail(dto.Email);
+                if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+                {
+                    throw new ArgumentException("Wrong password");
+                }
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                var userClaims = new[]
+                {
+                    new Claim("user_id", user.Id.ToString()),
+                    new Claim("user_role", user.Role.ToString()),
+                    new Claim(ClaimTypes.Role, user.Role.ToString()),
+                };
+
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Audience"],
+                    claims: userClaims,
+                    signingCredentials: credentials,
+                    expires: DateTime.Now.AddDays(5)
+                );
+
+
+                return Ok(tokenHandler.WriteToken(token));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
 
@@ -74,7 +118,9 @@ namespace API_gateway.Controllers
             }
         }
 
-        [HttpPut] 
+        [HttpPut]
+        [Authorize]
+        [Authorize(Roles = "ADMINISTRATOR")]
         public async Task<ActionResult> ActivateUser([FromQuery] Guid id)
         {
             try

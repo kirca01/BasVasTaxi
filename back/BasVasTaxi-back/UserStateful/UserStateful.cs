@@ -207,7 +207,7 @@ namespace UserStateful
             var stateMenager = this.StateManager;
             var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
 
-            dto.Role = UserRole.USER;
+            dto.Role = dto.Role;
             User user = new User(dto);
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             using (var transaction = stateMenager.CreateTransaction())
