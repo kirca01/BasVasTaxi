@@ -9,7 +9,7 @@ namespace ClassCommon.Enums
     public enum UserRole
     {
         USER = 0,
-        ADMINISTATOR = 1,
+        ADMINISTRATOR = 1,
         DRIVER = 2
     }
 }
