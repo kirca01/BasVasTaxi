@@ -32,5 +32,20 @@ namespace API_gateway.Services
         {
             return await _userManagementService.GetUserByEmail(email);
         }
+
+        public async Task<List<UserDTO>> GetAllNonActivatedUsers()
+        {
+            return await _userManagementService.GetAllNonActivatedUsers();
+        }
+
+        public async Task ActivateUser(Guid id)
+        {
+            await _userManagementService.ActivateUser(id);
+        }
+
+        public async Task<UserDTO> UpdateUser(UpdateUserDTO dto)
+        {
+            return await _userManagementService.UpdateUser(dto);
+        }
     }
 }

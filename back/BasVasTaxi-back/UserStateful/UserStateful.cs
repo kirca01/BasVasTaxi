@@ -31,6 +31,103 @@ namespace UserStateful
             _userDbContext = serviceProvider.GetService<UserDBContext>();
         }
 
+        public async Task<UserDTO> UpdateUser(UpdateUserDTO dto)
+        {
+            User user = await GetUserById(dto.Id) ?? throw new InvalidOperationException();
+            user.Address = dto.Address;
+            user.Username = dto.Username;
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Birthday = dto.Birthday;
+            user.Image = dto.Image;
+            var stateMenager = this.StateManager;
+            var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+            using (var transaction = stateMenager.CreateTransaction())
+            {
+                await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
+                await transaction.CommitAsync();
+            }
+
+            User userdb = _userDbContext.Users.First(x => x.Id == dto.Id);
+            userdb.Address = dto.Address;
+            userdb.Username = dto.Username;
+            userdb.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            userdb.FirstName = dto.FirstName;
+            userdb.LastName = dto.LastName;
+            userdb.Birthday = dto.Birthday;
+            userdb.Image = dto.Image;
+            _ = _userDbContext.SaveChangesAsync();
+
+            return new UserDTO(userdb);
+        }
+
+        public async Task ActivateUser(Guid id)
+        {
+            User user = await GetUserById(id) ?? throw new InvalidOperationException();
+            user.IsActivated = true;
+            var stateMenager = this.StateManager;
+            var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+            using (var transaction = stateMenager.CreateTransaction())
+            {
+                await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
+                await transaction.CommitAsync();
+            }
+
+            User userdb = _userDbContext.Users.First(x => x.Id == id);
+            userdb.IsActivated = true;
+            _ = _userDbContext.SaveChangesAsync();
+
+
+        }
+
+        public async Task<List<UserDTO>> GetAllNonActivatedUsers()
+        {
+            var stateManager = this.StateManager;
+            var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+                var nonActivatedUsers = new List<UserDTO>();
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var userDict = enumerator.Current.Value;
+                    if (!userDict.IsActivated)
+                    {
+                        nonActivatedUsers.Add(new UserDTO(userDict));
+                    }
+                }
+                return nonActivatedUsers;
+            }
+            // ovo se nece nikad izvrsiti, proveriti posle
+            List<UserDTO> nonActivatedUsersDb = _userDbContext.Users.Where(x => !x.IsActivated).Select(x => new UserDTO(x)).ToList();
+            return nonActivatedUsersDb;
+
+  
+        }
+
+        private async Task<User> GetUserById(Guid id)
+        {
+            var stateManager = this.StateManager;
+            var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var userDict = enumerator.Current.Value;
+                    if (userDict.Id == id)
+                    {
+                        return userDict;
+                    }
+                }
+            }
+            return null;
+        }
+
         public async Task<string> GetHelloWorld()
         {
             return "Hello world";
@@ -38,23 +135,23 @@ namespace UserStateful
 
         public async Task<UserDTO> GetUserByEmail(string email)
         {
-            //var stateManager = this.StateManager;
-            //var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+            var stateManager = this.StateManager;
+            var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
 
-            //using (var transaction = stateManager.CreateTransaction())
-            //{
-            //    var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
 
-            //    while (await enumerator.MoveNextAsync(default))
-            //    {
-            //        var user = enumerator.Current.Value;
-            //        if (user.Email == email)
-            //        {
-            //            return user;
-            //        }
-            //    }
-            //}
-            if(string.IsNullOrEmpty(email))
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var userDict = enumerator.Current.Value;
+                    if (userDict.Email == email)
+                    {
+                        return new UserDTO(userDict);
+                    }
+                }
+            }
+            if (string.IsNullOrEmpty(email))
             {
                 throw new ArgumentException("Email must be provided.");
             }
@@ -147,6 +244,26 @@ namespace UserStateful
 
             var myDictionary = await StateManager.GetOrAddAsync<IReliableDictionary<string, long>>("myDictionary");
 
+            var stateMenager = this.StateManager;
+            var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+
+            try
+            {
+                foreach(User user in this._userDbContext.Users.ToList())
+                {
+                    using var transaction = stateMenager.CreateTransaction();
+                    await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
+                    await transaction.CommitAsync();
+                }
+                
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -169,6 +286,8 @@ namespace UserStateful
             }
 
         }
+
+      
     }
 }
 

@@ -13,5 +13,8 @@ namespace ClassCommon.Interfaces
         public Task<string> GetHelloWorld();
         Task Register(UserDTO dto);
         Task<UserDTO> GetUserByEmail(String email);
+        Task<List<UserDTO>> GetAllNonActivatedUsers();
+        Task ActivateUser(Guid id);
+        Task<UserDTO> UpdateUser(UpdateUserDTO dto);
     }
 }

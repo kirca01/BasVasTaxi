@@ -59,5 +59,47 @@ namespace API_gateway.Controllers
                 return NotFound();
             }
         }
+
+        [HttpGet]
+        public async Task<ActionResult<List<UserDTO>>> GetAllNonActivatedUsers()
+        {
+            try
+            {
+                List<UserDTO> users = await _userService.GetAllNonActivatedUsers();
+                return Ok(users);
+            }
+            catch(Exception ex)
+            {
+                return NotFound(ex);
+            }
+        }
+
+        [HttpPut] 
+        public async Task<ActionResult> ActivateUser([FromQuery] Guid id)
+        {
+            try
+            {
+                await _userService.ActivateUser(id);
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return NotFound(ex);
+            }
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<UserDTO>> UpdateUser([FromBody] UpdateUserDTO dto)
+        {
+            try
+            {
+                UserDTO user = await _userService.UpdateUser(dto);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex);
+            }
+        }
     }
 }
