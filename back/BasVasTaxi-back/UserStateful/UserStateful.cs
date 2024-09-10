@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Helpers;
@@ -15,6 +16,8 @@ using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using UserStateful.Models;
 
 namespace UserStateful
@@ -77,8 +80,26 @@ namespace UserStateful
             User userdb = _userDbContext.Users.First(x => x.Id == id);
             userdb.IsActivated = true;
             _ = _userDbContext.SaveChangesAsync();
+            //await SendActivationMail(user, $"Hello {user.FirstName}, welcome to BasVasTaxi. Your account has been activated!");
 
+        }
 
+        public async Task SendActivationMail(User user, String text)
+        {
+            StreamReader sr = new StreamReader("sendgrid_api_key.txt");
+            String sendgridApiKey = sr.ReadLine();
+            SendGridClient client = new SendGridClient(sendgridApiKey);
+            SendGridMessage msg = new SendGridMessage();
+            msg.SetFrom(new EmailAddress("kircanski.bojan@gmail.com", "BasVasTaxi"));
+            msg.AddTo(new EmailAddress(user.Email, String.Concat(user.FirstName, " ", user.LastName)));
+            msg.Subject = "Welcome to BasVasTaxi";
+            msg.PlainTextContent = text;
+            Response response = await client.SendEmailAsync(msg);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("Mail error");
+            }
         }
 
         public async Task<List<UserDTO>> GetAllNonActivatedUsers()

@@ -689,3 +689,4 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,webstorm,react,dotnetcore,node
+back/BasVasTaxi-back/UserStateful/sendgrid_api_key.txt
