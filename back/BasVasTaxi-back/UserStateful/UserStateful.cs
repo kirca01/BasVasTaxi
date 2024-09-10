@@ -18,7 +18,7 @@ using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using UserStateful.Models;
+using ClassCommon.Models;
 
 namespace UserStateful
 {

@@ -6,7 +6,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using UserStateful.Models;
+using ClassCommon.Models;
 
 namespace ClassCommon.DTOs
 {

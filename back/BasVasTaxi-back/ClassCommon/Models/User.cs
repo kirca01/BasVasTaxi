@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UserStateful.Shared;
+using ClassCommon.Shared;
 
-namespace UserStateful.Models
+namespace ClassCommon.Models
 {
     public class User : IBaseEntity
     {

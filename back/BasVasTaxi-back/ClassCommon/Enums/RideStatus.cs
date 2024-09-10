@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClassCommon.Shared
+namespace ClassCommon.Enums
 {
-    public interface IBaseEntity
+    public enum RideStatus
     {
-        Guid Id { get; set; }
+        PENDING = 0,
+        CONFIRMED = 1,
+        FINISHED = 2,
     }
 }
