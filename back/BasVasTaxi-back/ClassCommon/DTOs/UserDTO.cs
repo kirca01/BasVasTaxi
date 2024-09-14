@@ -6,7 +6,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using UserStateful.Models;
+using ClassCommon.Models;
 
 namespace ClassCommon.DTOs
 {
@@ -33,6 +33,8 @@ namespace ClassCommon.DTOs
         public UserRole Role { get; set; }
         [DataMember]
         public String? Image { get; set; }
+        [DataMember]
+        public VerificationState VerificationState { get; set; }
 
         public UserDTO()
         {
@@ -50,6 +52,7 @@ namespace ClassCommon.DTOs
             Address = dto.Address;
             Birthday = dto.Birthday;
             Role = dto.Role;
+            VerificationState = dto.VerificationState;
         }
     }
 

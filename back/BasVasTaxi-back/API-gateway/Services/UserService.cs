@@ -47,5 +47,10 @@ namespace API_gateway.Services
         {
             return await _userManagementService.UpdateUser(dto);
         }
+
+        public async Task BlockUser(Guid id)
+        {
+            await _userManagementService.BlockUser(id);
+        }
     }
 }

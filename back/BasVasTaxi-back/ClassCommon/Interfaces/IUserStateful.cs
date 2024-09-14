@@ -16,5 +16,6 @@ namespace ClassCommon.Interfaces
         Task<List<UserDTO>> GetAllNonActivatedUsers();
         Task ActivateUser(Guid id);
         Task<UserDTO> UpdateUser(UpdateUserDTO dto);
+        Task BlockUser(Guid id);
     }
 }
