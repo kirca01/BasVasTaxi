@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
@@ -8,6 +8,7 @@ using ClassCommon.DTOs;
 using ClassCommon.Enums;
 using ClassCommon.Interfaces;
 using ClassCommon.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
@@ -26,6 +27,62 @@ namespace RideStateful
             : base(context)
         {
             _rideDbContext = serviceProvider.GetService<RideDBContext>();
+        }
+
+        public async Task AcceptRide(Guid rideId, Guid driverId)
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var ride = await GetRideById(rideId) ?? throw new InvalidOperationException();
+
+                if (ride.Status != RideStatus.PENDING)
+                {
+                    throw new InvalidOperationException("Ride is already accepted or finished.");
+                }
+
+                ride.Status = RideStatus.CONFIRMED;
+                ride.DriverId = driverId;
+
+                await ridesDict.AddOrUpdateAsync(transaction, rideId, ride, (k, v) => ride);
+                await transaction.CommitAsync();
+            }
+
+            var rideFromDb = await _rideDbContext.Rides.FindAsync(rideId);
+            if (rideFromDb != null)
+            {
+                
+                rideFromDb.Status = RideStatus.CONFIRMED;
+                rideFromDb.DriverId = driverId;
+                await _rideDbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Ride with ID {rideId} not found in the database.");
+            }
+        }
+
+        private async Task<Ride> GetRideById(Guid id)
+        {
+            var stateManager = this.StateManager;
+            var usersDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await usersDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var rideDict = enumerator.Current.Value;
+                    if (rideDict != null && rideDict.Id == id)
+                    {
+                        return rideDict;
+                    }
+                }
+            }
+            return null;
         }
 
         public async Task<RideDTO> CreateRide(CreateRideDTO dto)
@@ -56,8 +113,140 @@ namespace RideStateful
             return new RideDTO(ride);
         }
 
+        public async Task DeleteRide(Guid rideId)
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var rideExists = await ridesDict.TryGetValueAsync(transaction, rideId);
+                if (rideExists.HasValue)
+                {
+                    await ridesDict.TryRemoveAsync(transaction, rideId); 
+                    await transaction.CommitAsync();
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Ride with ID {rideId} not found in Service Fabric.");
+                }
+            }
+
+            
+            var rideFromDb = await _rideDbContext.Rides.FindAsync(rideId);
+            if (rideFromDb != null)
+            {
+                _rideDbContext.Rides.Remove(rideFromDb);
+                await _rideDbContext.SaveChangesAsync(); 
+            }
+            else
+            {
+                throw new InvalidOperationException($"Ride with ID {rideId} not found in the database.");
+            }
+        }
+
+        public async Task<List<RideDTO>> GetAllPendingRides()
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            var userRides = new List<RideDTO>();
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await ridesDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var rideDict = enumerator.Current.Value;
+
+                    if (rideDict.Status == RideStatus.PENDING)
+                    {
+                        userRides.Add(new RideDTO(rideDict));
+                    }
+                }
+            }
+
+            var ridesForUserDb = _rideDbContext.Rides
+                .Where(x => x.Status.Equals("PENDING"))
+                .Select(x => new RideDTO(x))
+                .ToList();
+
+            userRides.AddRange(ridesForUserDb);
+
+            return userRides;
+        }
+
+        public async Task<List<RideDTO>> GetAllRides()
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            var allRides = new List<RideDTO>();
+            var rideIds = new HashSet<Guid>(); 
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await ridesDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var rideDict = enumerator.Current.Value;
+
+                    if (rideDict != null && rideIds.Add(rideDict.Id)) 
+                    {
+                        allRides.Add(new RideDTO(rideDict));
+                    }
+                }
+            }
+
+            var ridesFromDb = await _rideDbContext.Rides
+                .Select(x => new RideDTO(x))
+                .ToListAsync();
+
+            foreach (var ride in ridesFromDb)
+            {
+                if (rideIds.Add(ride.Id)) 
+                {
+                    allRides.Add(ride);
+                }
+            }
+
+            return allRides;
+        }
 
 
+        public async Task<List<RideDTO>> GetRidesForUser(Guid userId)
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            var userRides = new List<RideDTO>();
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await ridesDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var rideDict = enumerator.Current.Value;
+
+                    if (rideDict.UserId == userId && rideDict.Status == RideStatus.FINISHED)
+                    {
+                        userRides.Add(new RideDTO(rideDict));
+                    }
+                }
+            }
+
+            var ridesForUserDb = _rideDbContext.Rides
+                .Where(x => x.UserId == userId && x.Status.Equals("FINISHED"))
+                .Select(x => new RideDTO(x))
+                .ToList();
+
+            userRides.AddRange(ridesForUserDb);
+
+            return userRides;
+        }
 
 
         /// <summary>

@@ -21,9 +21,10 @@ namespace ClassCommon.Models
         public String? Image { get; set; }
         public DateTime Birthday { get; set; }
         public String Address { get; set; }
-        public UserRole Role { get; set; }    
+        public UserRole Role { get; set; }
+        public VerificationState VerificationState { get; set; }    
 
-        public User(string firstName, string lastName, string email, string username, string password, bool isActivated, string? image, DateTime birthday, string address, UserRole role)
+        public User(string firstName, string lastName, string email, string username, string password, bool isActivated, string? image, DateTime birthday, string address, UserRole role, VerificationState verificationState)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -34,7 +35,8 @@ namespace ClassCommon.Models
             Image = image;
             Birthday = birthday;
             Address = address;
-            Role = role;   
+            Role = role;
+            VerificationState = verificationState;
         }
 
         public User()
@@ -53,6 +55,7 @@ namespace ClassCommon.Models
             Address = dto.Address;
             Role = dto.Role;
             IsActivated = false;
+            VerificationState = dto.VerificationState;
         }
 
     }

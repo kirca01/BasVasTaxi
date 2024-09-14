@@ -10,6 +10,11 @@ namespace ClassCommon.Interfaces
 {
     public interface IRideStateful : IService
     {
+        Task AcceptRide(Guid rideId, Guid driverId);
         Task<RideDTO> CreateRide(CreateRideDTO dto);
+        Task DeleteRide(Guid rideId);
+        Task<List<RideDTO>> GetAllPendingRides();
+        Task<List<RideDTO>> GetAllRides();
+        Task<List<RideDTO>> GetRidesForUser(Guid userId);
     }
 }

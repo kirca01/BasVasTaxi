@@ -135,6 +135,22 @@ namespace API_gateway.Controllers
         }
 
         [HttpPut]
+        [Authorize]
+        [Authorize(Roles = "ADMINISTRATOR")]
+        public async Task<ActionResult> BlockUser([FromQuery] Guid id)
+        {
+            try
+            {
+                await _userService.BlockUser(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex);
+            }
+        }
+
+        [HttpPut]
         public async Task<ActionResult<UserDTO>> UpdateUser([FromBody] UpdateUserDTO dto)
         {
             try

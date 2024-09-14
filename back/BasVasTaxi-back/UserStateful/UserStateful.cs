@@ -69,6 +69,7 @@ namespace UserStateful
         {
             User user = await GetUserById(id) ?? throw new InvalidOperationException();
             user.IsActivated = true;
+            user.VerificationState = VerificationState.VERIFICATED; // VERIFIKACIJA ZA RECNIK
             var stateMenager = this.StateManager;
             var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
             using (var transaction = stateMenager.CreateTransaction())
@@ -79,9 +80,30 @@ namespace UserStateful
 
             User userdb = _userDbContext.Users.First(x => x.Id == id);
             userdb.IsActivated = true;
+            userdb.VerificationState = VerificationState.VERIFICATED; // VERIFIKACIJA ZA BAZU
             _ = _userDbContext.SaveChangesAsync();
-            //await SendActivationMail(user, $"Hello {user.FirstName}, welcome to BasVasTaxi. Your account has been activated!");
+            //await SendActivationMail(user, $"Hello {user.FirstName}, welcome to BasVasTaxi. Your account has been activated and verificated!");
 
+        }
+
+        public async Task BlockUser(Guid id)
+        {
+            User user = await GetUserById(id) ?? throw new InvalidOperationException();
+            user.IsActivated = false;
+            user.VerificationState = VerificationState.UNVERIFICATED; // VERIFIKACIJA ZA RECNIK
+            var stateMenager = this.StateManager;
+            var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
+            using (var transaction = stateMenager.CreateTransaction())
+            {
+                await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
+                await transaction.CommitAsync();
+            }
+
+            User userdb = _userDbContext.Users.First(x => x.Id == id);
+            userdb.IsActivated = false;
+            userdb.VerificationState = VerificationState.UNVERIFICATED; // VERIFIKACIJA ZA BAZU
+            _ = _userDbContext.SaveChangesAsync();
+            //await SendActivationMail(user, $"Hello {user.FirstName}, welcome to BasVasTaxi, but your account has been rejected and unverificated!");
         }
 
         public async Task SendActivationMail(User user, String text)
@@ -114,7 +136,7 @@ namespace UserStateful
                 while (await enumerator.MoveNextAsync(default))
                 {
                     var userDict = enumerator.Current.Value;
-                    if (!userDict.IsActivated)
+                    if (userDict != null && !userDict.IsActivated)
                     {
                         nonActivatedUsers.Add(new UserDTO(userDict));
                     }
@@ -140,7 +162,7 @@ namespace UserStateful
                 while (await enumerator.MoveNextAsync(default))
                 {
                     var userDict = enumerator.Current.Value;
-                    if (userDict.Id == id)
+                    if (userDict != null && userDict.Id == id)
                     {
                         return userDict;
                     }
@@ -166,7 +188,7 @@ namespace UserStateful
                 while (await enumerator.MoveNextAsync(default))
                 {
                     var userDict = enumerator.Current.Value;
-                    if (userDict.Email == email)
+                    if (userDict != null && userDict.Email == email)
                     {
                         return new UserDTO(userDict);
                     }
@@ -225,12 +247,19 @@ namespace UserStateful
                 throw new InvalidOperationException("A user with this email already exists.");
             }
 
+            // provera za registraciju kao administrator
+            if (dto.Role == UserRole.ADMINISTRATOR)
+            {
+                throw new InvalidOperationException("You are not allowed to register as an administrator.");
+            }
+
             var stateMenager = this.StateManager;
             var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
 
             dto.Role = dto.Role;
             User user = new User(dto);
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            user.VerificationState = VerificationState.PROCESSING; // PROCESSING 
             using (var transaction = stateMenager.CreateTransaction())
             {
                 await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
@@ -307,8 +336,6 @@ namespace UserStateful
             }
 
         }
-
-      
     }
 }
 
