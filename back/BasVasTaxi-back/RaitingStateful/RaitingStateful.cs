@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
@@ -12,6 +12,7 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using ClassCommon.Interfaces;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 
 namespace RaitingStateful
@@ -22,10 +23,15 @@ namespace RaitingStateful
     internal sealed class RaitingStateful : StatefulService, IRaitingStateful
     {
         private RaitingDBContext _raitingDbContext;
+        private readonly IRaitingStateless _raitingStateless;
         public RaitingStateful(StatefulServiceContext context, IServiceProvider serviceProvider)
             : base(context)
         {
             _raitingDbContext = serviceProvider.GetService<RaitingDBContext>();
+
+            _raitingStateless = ServiceProxy.Create<IRaitingStateless>(
+                new Uri("fabric:/BasVasTaxi-back/RaitingStateless"));
+            
         }
 
         public async Task AddRaiting(Guid userId, double newRaiting)
@@ -40,8 +46,7 @@ namespace RaitingStateful
                 {
                     Id = Guid.NewGuid(),
                     UserID = userId,
-                    Raitings = newRaiting,
-                    NumOfRates = 1
+                    Raitings = newRaiting
                 };
 
                 await raitingDictionary.AddAsync(transaction, userId, newRaitingEntry);
@@ -50,32 +55,42 @@ namespace RaitingStateful
 
 
 
-            Raiting newRaitingInDb = new Raiting(Guid.NewGuid(), userId, newRaiting, 1);
+            Raiting newRaitingInDb = new Raiting(Guid.NewGuid(), userId, newRaiting);
             await _raitingDbContext.Raitings.AddAsync(newRaitingInDb);
 
             await _raitingDbContext.SaveChangesAsync();
         }
 
-        //private async Task<Raiting> GetRaitingByIdForUser(Guid id)
-        //{
-        //    var stateManager = this.StateManager;
-        //    var raitingDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Raiting>>("raitingDictionary");
+        public async Task<double> GetAverageRating(Guid userId)
+        {
+            List<Raiting> raitings = await GetRaitingsByUserId(userId);
 
-        //    using (var transaction = stateManager.CreateTransaction())
-        //    {
-        //        var enumerator = (await raitingDictionary.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+            double average = await _raitingStateless.CalculateNewRaiting(raitings);
 
-        //        while (await enumerator.MoveNextAsync(default))
-        //        {
-        //            var raitingDict = enumerator.Current.Value;
-        //            if (raitingDict != null && raitingDict.UserID == id)
-        //            {
-        //                return raitingDict;
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
+            return average;
+        }
+
+        private async Task<List<Raiting>> GetRaitingsByUserId(Guid userId)
+        {
+            var stateManager = this.StateManager;
+            var raitingDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Raiting>>("raitingDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await raitingDictionary.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+                var allRaitingsById = new List<Raiting>();
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var raiting = enumerator.Current.Value;
+                    if (raiting != null && raiting.UserID == userId)
+                    {
+                        allRaitingsById.Add(raiting);
+                    }
+                }
+                return allRaitingsById;
+            }
+
+        }
 
         /// <summary>
         /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
@@ -140,5 +155,7 @@ namespace RaitingStateful
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             }
         }
+
+        
     }
 }

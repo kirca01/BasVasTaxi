@@ -1,4 +1,7 @@
-﻿using ClassCommon.Interfaces;
+﻿using ClassCommon.DTOs;
+using ClassCommon.Interfaces;
+using ClassCommon.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 
@@ -20,6 +23,11 @@ namespace API_gateway.Services
         public async Task AddRaiting(Guid userId, double raiting)
         {
             await _raitingManagementService.AddRaiting(userId, raiting);
+        }
+
+        public async Task<double> GetAverageRating(Guid userId)
+        {
+            return await _raitingManagementService.GetAverageRating(userId);
         }
     }
 }

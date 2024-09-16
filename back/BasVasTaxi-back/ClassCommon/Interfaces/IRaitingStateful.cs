@@ -10,5 +10,6 @@ namespace ClassCommon.Interfaces
     public interface IRaitingStateful : IService
     {
         Task AddRaiting(Guid userId, double raiting);
+        Task<double> GetAverageRating(Guid userId);
     }
 }

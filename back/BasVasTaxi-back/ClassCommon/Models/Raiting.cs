@@ -12,18 +12,16 @@ namespace ClassCommon.Models
         public Guid Id { get; set; } 
         public Guid UserID { get; set; }
         public double Raitings { get; set; }
-        public int NumOfRates { get; set; }
 
         public Raiting()
         {
                 
         }
-        public Raiting(Guid id, Guid userID, double raitings, int numOfRates)
+        public Raiting(Guid id, Guid userID, double raitings)
         {
             Id = id;
             UserID = userID;
             Raitings = raitings;
-            NumOfRates = numOfRates;
         }
     }
 }

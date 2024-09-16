@@ -1,5 +1,6 @@
 ﻿using API_gateway.Services;
 using ClassCommon.DTOs;
+using ClassCommon.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API_gateway.Controllers
@@ -23,6 +24,20 @@ namespace API_gateway.Controllers
             {
                 await _raitingService.AddRaiting(dto.UserId, dto.Raiting);
                 return Ok("Raiting added successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("average-rating")]
+        public async Task<ActionResult<double>> GetAverageRating([FromQuery] Guid userId)
+        {
+            try
+            {
+                var averageRating = await _raitingService.GetAverageRating(userId);
+                return Ok(averageRating);
             }
             catch (Exception ex)
             {
