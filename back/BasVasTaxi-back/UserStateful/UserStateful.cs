@@ -19,6 +19,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using ClassCommon.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace UserStateful
 {
@@ -227,7 +228,7 @@ namespace UserStateful
             }
         }
 
-        public async Task Register(UserDTO dto)
+        public async Task Register(CreateUserDTO dto, IFormFile image)
         {
             if (string.IsNullOrEmpty(dto.Email))
             {
@@ -253,6 +254,7 @@ namespace UserStateful
                 throw new InvalidOperationException("You are not allowed to register as an administrator.");
             }
 
+            
             var stateMenager = this.StateManager;
             var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
 
@@ -260,6 +262,17 @@ namespace UserStateful
             User user = new User(dto);
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             user.VerificationState = VerificationState.PROCESSING; // PROCESSING 
+            if (image != null)
+            {
+                string ImageName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                string SavePath = Path.Combine("static/profilePictures", ImageName);
+                using (var stream = new FileStream(SavePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+                user.Image = SavePath;
+            }
+            
             using (var transaction = stateMenager.CreateTransaction())
             {
                 await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);

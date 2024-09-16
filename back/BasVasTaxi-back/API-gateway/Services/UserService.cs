@@ -23,9 +23,9 @@ namespace API_gateway.Services
             return await _userManagementService.GetHelloWorld();
         }
 
-        public async Task Register(UserDTO dto)
+        public async Task Register(CreateUserDTO dto, IFormFile image)
         {
-            await _userManagementService.Register(dto);
+            await _userManagementService.Register(dto, image);
         }
 
         public async Task<UserDTO> GetByEmail(string email)

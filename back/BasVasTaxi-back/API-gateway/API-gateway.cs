@@ -115,6 +115,12 @@ namespace API_gateway
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseCors(config =>
+                        {
+                            config.AllowAnyHeader();
+                            config.AllowAnyMethod();
+                            config.AllowAnyOrigin();
+                        });
                         app.UseAuthorization();
                         app.MapControllers();
                         

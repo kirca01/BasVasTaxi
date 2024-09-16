@@ -1,15 +1,18 @@
 ﻿using API_gateway.Services;
 using ClassCommon;
 using ClassCommon.DTOs;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks.Dataflow;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace API_gateway.Controllers
@@ -28,11 +31,7 @@ namespace API_gateway.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<String> GetHelloWorld()
-        {
-            return await _userService.GetHelloWorld();
-        }
+        
 
         [HttpPost]
         public async Task<ActionResult> Login([FromBody] LoginDTO dto)
@@ -53,6 +52,7 @@ namespace API_gateway.Controllers
                 {
                     new Claim("user_id", user.Id.ToString()),
                     new Claim("user_role", user.Role.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Role, user.Role.ToString()),
                 };
 
@@ -75,11 +75,11 @@ namespace API_gateway.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> Register([FromBody] UserDTO dto)
+        public async Task<ActionResult> Register([FromForm] CreateUserDTO dto)
         {
             try
             {
-                await _userService.Register(dto);
+                await _userService.Register(dto, dto.ImageFile);
                 return Ok();
             }
             catch (Exception ex)
@@ -87,6 +87,28 @@ namespace API_gateway.Controllers
                 return BadRequest(ex);
             }
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<string>> whoAmI()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (identity == null || !identity.IsAuthenticated)
+            {
+                return BadRequest("JWT error");
+            }
+            string role = identity.FindFirst(ClaimTypes.Role)?.Value;
+            string id = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("User identifier not found");
+            }
+            return Ok(JsonConvert.SerializeObject(new { role, id }, Newtonsoft.Json.Formatting.Indented));
+
+        }
+
 
         [HttpGet]
         [Route("email")]
