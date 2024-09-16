@@ -29,12 +29,16 @@ namespace API_gateway
         private readonly HttpClient _httpClient;
         private readonly Uri _userManagementServiceUri;
         private readonly Uri _rideManagementServiceUri;
+        private readonly Uri _raitingManagementServiceUri;
+        private readonly Uri _raitingStatelessManagementServiceUri;
 
         public API_gateway(StatelessServiceContext context)
             : base(context)
         {
             _userManagementServiceUri = new Uri("fabric:/BasVasTaxi-back/UserStateful");
             _rideManagementServiceUri = new Uri("fabric:/BasVasTaxi-back/RideStateful");
+            _raitingManagementServiceUri = new Uri("fabric:/BasVasTaxi-back/RaitingStateful");
+            _raitingStatelessManagementServiceUri = new Uri("fabric:/BasVasTaxi-back/RaitingStateless");
             _httpClient = new HttpClient();
         }
 
