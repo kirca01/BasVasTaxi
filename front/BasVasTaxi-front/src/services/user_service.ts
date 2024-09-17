@@ -17,4 +17,8 @@ export class UserService {
             return {}
         });
     }
+
+    public async UpdateUser(data: object): Promise<void> {
+        return axios.put(environment + `/UserManagement/UpdateUser`, data)
+    }
 }
