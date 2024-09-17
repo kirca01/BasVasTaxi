@@ -33,7 +33,7 @@ namespace ClassCommon.DTOs
         public UserRole Role { get; set; }
         [DataMember]
         public IFormFile? ImageFile { get; set; }
-        
+
 
         public CreateUserDTO()
         {

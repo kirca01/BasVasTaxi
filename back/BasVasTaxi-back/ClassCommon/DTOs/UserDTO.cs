@@ -34,8 +34,7 @@ namespace ClassCommon.DTOs
         public UserRole Role { get; set; }
         [DataMember]
         public String? Image { get; set; }
-        [DataMember]
-        public IFormFile? ImageFile { get; set; }
+        
         [DataMember]
         public VerificationState VerificationState { get; set; }
 
@@ -56,6 +55,19 @@ namespace ClassCommon.DTOs
             Birthday = dto.Birthday;
             Role = dto.Role;
             VerificationState = dto.VerificationState;
+        }
+
+        public UserDTO(CreateUserDTO dto)
+        {
+            Id = dto.Id;
+            Username = dto.Username;
+            FirstName = dto.FirstName;
+            LastName = dto.LastName;
+            Password = dto.Password;
+            Email = dto.Email;
+            Address = dto.Address;
+            Birthday = dto.Birthday;
+            Role = dto.Role;
         }
     }
 

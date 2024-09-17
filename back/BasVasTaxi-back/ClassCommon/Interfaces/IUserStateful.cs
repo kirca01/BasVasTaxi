@@ -12,7 +12,7 @@ namespace ClassCommon.Interfaces
     public interface IUserStateful : IService
     {
         public Task<string> GetHelloWorld();
-        Task Register(CreateUserDTO dto, IFormFile image);
+        Task Register(UserDTO dto, String image);
         Task<UserDTO> GetUserByEmail(String email);
         Task<List<UserDTO>> GetAllNonActivatedUsers();
         Task ActivateUser(Guid id);

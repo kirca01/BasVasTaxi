@@ -228,7 +228,7 @@ namespace UserStateful
             }
         }
 
-        public async Task Register(CreateUserDTO dto, IFormFile image)
+        public async Task Register(UserDTO dto, String image)
         {
             if (string.IsNullOrEmpty(dto.Email))
             {
@@ -262,16 +262,7 @@ namespace UserStateful
             User user = new User(dto);
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             user.VerificationState = VerificationState.PROCESSING; // PROCESSING 
-            if (image != null)
-            {
-                string ImageName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                string SavePath = Path.Combine("static/profilePictures", ImageName);
-                using (var stream = new FileStream(SavePath, FileMode.Create))
-                {
-                    image.CopyTo(stream);
-                }
-                user.Image = SavePath;
-            }
+            user.Image = image;
             
             using (var transaction = stateMenager.CreateTransaction())
             {
