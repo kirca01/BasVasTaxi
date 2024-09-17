@@ -177,6 +177,11 @@ namespace UserStateful
             return "Hello world";
         }
 
+        public async Task<UserDTO> GetById(Guid id)
+        {
+            return new UserDTO(await GetUserById(id));
+        }
+
         public async Task<UserDTO> GetUserByEmail(string email)
         {
             var stateManager = this.StateManager;
@@ -270,7 +275,7 @@ namespace UserStateful
                 await transaction.CommitAsync();
             }
             await _userDbContext.Users.AddAsync(user);
-            await _userDbContext.SaveChangesAsync();
+            _userDbContext.SaveChanges();
             return;
         }
 
@@ -340,6 +345,8 @@ namespace UserStateful
             }
 
         }
+
+        
     }
 }
 

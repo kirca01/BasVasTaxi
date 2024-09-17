@@ -127,6 +127,21 @@ namespace API_gateway.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult<UserDTO>> GetById([FromQuery] Guid id)
+        {
+            try
+            {
+
+                UserDTO user = await _userService.GetById(id);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
         public async Task<ActionResult<List<UserDTO>>> GetAllNonActivatedUsers()
         {
             try

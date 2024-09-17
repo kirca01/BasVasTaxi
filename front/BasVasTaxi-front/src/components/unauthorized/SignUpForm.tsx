@@ -42,7 +42,7 @@ const SignUpForm = () => {
     const registrationMutation = useMutation({
         mutationFn: (data:FormData) => {
             return axios.post(environment+ '/UserManagement/Register', data).then((res)=>{
-                if (res.status ==200) {setSuccessfulRegistration(true); setAxiosError('');}
+                if (res.status ==200) {setSuccessfulRegistration(true); setAxiosError(''); navigate("/signin")}
 
             }).catch((e)=>{
                 if (e.response.status ==400) {setAxiosError(e.response.data.message);}
@@ -95,7 +95,7 @@ const SignUpForm = () => {
             formData.append("username", event.target.username.value);
             formData.append("password", event.target.password.value);
             formData.append("address", event.target.address.value);
-            formData.append("birthday", event.target.birthday.value);
+            formData.append("birthday", "2024-09-17T20:06:20.695Z");
             formData.append("imageFile", fileData);
             // console.log(formData)
             registrationMutation.mutate(formData);

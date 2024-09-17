@@ -65,5 +65,10 @@ namespace API_gateway.Services
         {
             await _userManagementService.BlockUser(id);
         }
+
+        internal async Task<UserDTO> GetById(Guid id)
+        {
+            return await _userManagementService.GetById(id);
+        }
     }
 }

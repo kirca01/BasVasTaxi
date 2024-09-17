@@ -55,6 +55,7 @@ namespace ClassCommon.DTOs
             Birthday = dto.Birthday;
             Role = dto.Role;
             VerificationState = dto.VerificationState;
+            Image = dto.Image;
         }
 
         public UserDTO(CreateUserDTO dto)

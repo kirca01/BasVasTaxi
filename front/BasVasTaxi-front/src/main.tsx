@@ -11,6 +11,9 @@ import SignUpPage from "./pages/SignUpPage.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import {AuthenticatedRoute} from "./security/AuthenticatedRoute.tsx";
 import Layout from "./components/shared/Layout.tsx";
+import {UserRoute} from "./security/UserRoute.tsx";
+import {AdminRoute} from "./security/AdminRoute.tsx";
+import {DriverRoute} from "./security/DriverRoute.tsx";
 
 
 const theme = createTheme({
@@ -29,6 +32,12 @@ const router = createBrowserRouter([
     {path:"/signin", element: <UnauthenticatedRoute><SignInPage/></UnauthenticatedRoute>},
     {path:"/signup", element: <UnauthenticatedRoute><SignUpPage/></UnauthenticatedRoute>},
     {path:"/home", element: <AuthenticatedRoute><Layout><HomePage/></Layout></AuthenticatedRoute>},
+    {path:"/profile", element: <AuthenticatedRoute><Layout><HomePage/></Layout></AuthenticatedRoute>},
+    {path:"/history", element: <AuthenticatedRoute><UserRoute><Layout><HomePage/></Layout></UserRoute></AuthenticatedRoute>},
+    {path:"/verify", element: <AuthenticatedRoute><AdminRoute><Layout><HomePage/></Layout></AdminRoute></AuthenticatedRoute>},
+    {path:"/allrides", element: <AuthenticatedRoute><AdminRoute><Layout><HomePage/></Layout></AdminRoute></AuthenticatedRoute>},
+    {path:"/newrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
+    {path:"/oldrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
 
     {path:"*", element: <Navigate to="/signin" replace />},
 ])
