@@ -5,7 +5,7 @@ import {AdminRoute} from "../security/AdminRoute";
 import AdminHome from "../components/admin/AdminHome.tsx";
 import DriverHome from "../components/driver/DriverHome.tsx";
 import ProfileComponent from "../components/user/ProfileComponent.tsx";
-import {UserService} from "../services/user_service.ts";
+import {UserService} from "../services/UserService.ts";
 
 
 const ProfilePage=()=>{
