@@ -57,6 +57,17 @@ namespace ClassCommon.Models
             IsActivated = false;
             VerificationState = dto.VerificationState;
         }
-
+        public User(CreateUserDTO dto)
+        {
+            FirstName = dto.FirstName;
+            LastName = dto.LastName;
+            Email = dto.Email;
+            Username = dto.Username;
+            Password = dto.Password;
+            Birthday = dto.Birthday;
+            Address = dto.Address;
+            Role = dto.Role;
+            IsActivated = false;
+        }
     }
 }

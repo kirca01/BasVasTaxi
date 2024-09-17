@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
+using Microsoft.Extensions.FileProviders;
 
 namespace API_gateway
 {
@@ -115,6 +116,18 @@ namespace API_gateway
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseStaticFiles();
+                        app.UseStaticFiles(new StaticFileOptions()
+                        {
+                            FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"static/")),
+                            RequestPath = new PathString("/static")
+                        });
+                        app.UseCors(config =>
+                        {
+                            config.AllowAnyHeader();
+                            config.AllowAnyMethod();
+                            config.AllowAnyOrigin();
+                        });
                         app.UseAuthorization();
                         app.MapControllers();
                         

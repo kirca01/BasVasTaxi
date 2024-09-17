@@ -1,5 +1,6 @@
 ﻿using ClassCommon.DTOs;
 using ClassCommon.Interfaces;
+using ClassCommon.Models;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 
@@ -23,9 +24,21 @@ namespace API_gateway.Services
             return await _userManagementService.GetHelloWorld();
         }
 
-        public async Task Register(UserDTO dto)
+        public async Task Register(CreateUserDTO dto, IFormFile image)
         {
-            await _userManagementService.Register(dto);
+            string imagePath = "";
+            if (image != null)
+            {
+                string ImageName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                string SavePath = Path.Combine("static/profilePictures", ImageName);
+                using (var stream = new FileStream(SavePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+                imagePath = SavePath;
+            }
+
+            await _userManagementService.Register(new UserDTO(dto), imagePath);
         }
 
         public async Task<UserDTO> GetByEmail(string email)
@@ -51,6 +64,11 @@ namespace API_gateway.Services
         public async Task BlockUser(Guid id)
         {
             await _userManagementService.BlockUser(id);
+        }
+
+        internal async Task<UserDTO> GetById(Guid id)
+        {
+            return await _userManagementService.GetById(id);
         }
     }
 }

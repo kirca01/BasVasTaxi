@@ -1,18 +1,17 @@
 ﻿using ClassCommon.Enums;
+using ClassCommon.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using ClassCommon.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace ClassCommon.DTOs
 {
     [DataContract]
-    public class UserDTO
+    public class CreateUserDTO
     {
         [DataMember]
         public Guid Id { get; set; }
@@ -33,32 +32,15 @@ namespace ClassCommon.DTOs
         [DataMember]
         public UserRole Role { get; set; }
         [DataMember]
-        public String? Image { get; set; }
-        
-        [DataMember]
-        public VerificationState VerificationState { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
-        public UserDTO()
+
+        public CreateUserDTO()
         {
-                    
+
         }
 
-        public UserDTO(User dto)
-        {
-            Id = dto.Id;
-            Username = dto.Username;
-            FirstName = dto.FirstName;
-            LastName = dto.LastName;
-            Password = dto.Password;
-            Email = dto.Email;
-            Address = dto.Address;
-            Birthday = dto.Birthday;
-            Role = dto.Role;
-            VerificationState = dto.VerificationState;
-            Image = dto.Image;
-        }
-
-        public UserDTO(CreateUserDTO dto)
+        public CreateUserDTO(User dto)
         {
             Id = dto.Id;
             Username = dto.Username;
@@ -71,6 +53,4 @@ namespace ClassCommon.DTOs
             Role = dto.Role;
         }
     }
-
-    
 }

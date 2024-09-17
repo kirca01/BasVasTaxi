@@ -19,6 +19,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using ClassCommon.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace UserStateful
 {
@@ -176,6 +177,11 @@ namespace UserStateful
             return "Hello world";
         }
 
+        public async Task<UserDTO> GetById(Guid id)
+        {
+            return new UserDTO(await GetUserById(id));
+        }
+
         public async Task<UserDTO> GetUserByEmail(string email)
         {
             var stateManager = this.StateManager;
@@ -227,7 +233,7 @@ namespace UserStateful
             }
         }
 
-        public async Task Register(UserDTO dto)
+        public async Task Register(UserDTO dto, String image)
         {
             if (string.IsNullOrEmpty(dto.Email))
             {
@@ -253,6 +259,7 @@ namespace UserStateful
                 throw new InvalidOperationException("You are not allowed to register as an administrator.");
             }
 
+            
             var stateMenager = this.StateManager;
             var userDictionary = await stateMenager.GetOrAddAsync<IReliableDictionary<Guid, User>>("userDictionary");
 
@@ -260,13 +267,15 @@ namespace UserStateful
             User user = new User(dto);
             user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             user.VerificationState = VerificationState.PROCESSING; // PROCESSING 
+            user.Image = image;
+            
             using (var transaction = stateMenager.CreateTransaction())
             {
                 await userDictionary.AddOrUpdateAsync(transaction, user.Id, user, (k, v) => v);
                 await transaction.CommitAsync();
             }
             await _userDbContext.Users.AddAsync(user);
-            await _userDbContext.SaveChangesAsync();
+            _userDbContext.SaveChanges();
             return;
         }
 
@@ -336,6 +345,8 @@ namespace UserStateful
             }
 
         }
+
+        
     }
 }
 
