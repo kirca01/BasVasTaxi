@@ -1,7 +1,7 @@
 import {Box, Button, Link, TextField, Typography} from "@mui/material";
 import {useContext, useEffect, useState} from "react";
 import {AuthContext} from "../../security/AuthContext.tsx";
-import {UserService} from "../../services/user_service.ts";
+import {UserService} from "../../services/UserService.ts";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";

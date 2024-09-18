@@ -6,7 +6,7 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
 import {environment} from "../../utils/Environment.ts";
-import {UserService} from "../../services/user_service.ts"
+import {UserService} from "../../services/UserService.ts"
 
 const Navbar = () => {
     const { id, role} = useContext(AuthContext);
