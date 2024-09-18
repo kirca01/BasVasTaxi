@@ -2,10 +2,10 @@ import {Box, Container, Grid, TablePagination, Typography} from "@mui/material";
 import React, {useContext, useEffect, useState} from "react";
 import {RideService} from "../../services/RideService.ts";
 import RideCard from "../shared/RideCard.tsx";
+import {RotatingLines} from "react-loader-spinner";
 import {AuthContext} from "../../security/AuthContext.tsx";
 
-
-const OldRidesComponent=()=>{
+const OldRidesDriverComponent=()=>{
 
     const rideService = new RideService();
     const [rides, setRides] = useState([]);
@@ -19,7 +19,7 @@ const OldRidesComponent=()=>{
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                let rideslist = await rideService.GetRidesForUser(id);
+                let rideslist = await rideService.GetRidesForDriver(id);
                 console.log(rideslist);
                 setRides(rideslist)
                 setTotalCount(rideslist.length)
@@ -73,4 +73,4 @@ const OldRidesComponent=()=>{
         </Container>
     </Box>
 }
-export default OldRidesComponent;
+export default OldRidesDriverComponent;

@@ -17,6 +17,7 @@ import {DriverRoute} from "./security/DriverRoute.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AllRidesPage from "./pages/AllRidesPage.tsx";
 import OldRidesPage from "./pages/OldRidesPage.tsx";
+import OldRidesDriverPage from "./pages/OldRidesDriverPage.tsx";
 
 
 const theme = createTheme({
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
     {path:"/verify", element: <AuthenticatedRoute><AdminRoute><Layout><HomePage/></Layout></AdminRoute></AuthenticatedRoute>},
     {path:"/allrides", element: <AuthenticatedRoute><AdminRoute><Layout><AllRidesPage/></Layout></AdminRoute></AuthenticatedRoute>},
     {path:"/newrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
-    {path:"/oldrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
+    {path:"/oldrides", element: <AuthenticatedRoute><DriverRoute><Layout><OldRidesDriverPage/></Layout></DriverRoute></AuthenticatedRoute>},
 
     {path:"*", element: <Navigate to="/signin" replace />},
 ])
