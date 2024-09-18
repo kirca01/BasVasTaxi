@@ -16,6 +16,7 @@ import {AdminRoute} from "./security/AdminRoute.tsx";
 import {DriverRoute} from "./security/DriverRoute.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AllRidesPage from "./pages/AllRidesPage.tsx";
+import OldRidesPage from "./pages/OldRidesPage.tsx";
 
 
 const theme = createTheme({
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
     {path:"/signup", element: <UnauthenticatedRoute><SignUpPage/></UnauthenticatedRoute>},
     {path:"/home", element: <AuthenticatedRoute><Layout><HomePage/></Layout></AuthenticatedRoute>},
     {path:"/profile", element: <AuthenticatedRoute><Layout><ProfilePage/></Layout></AuthenticatedRoute>},
-    {path:"/history", element: <AuthenticatedRoute><UserRoute><Layout><HomePage/></Layout></UserRoute></AuthenticatedRoute>},
+    {path:"/history", element: <AuthenticatedRoute><UserRoute><Layout><OldRidesPage/></Layout></UserRoute></AuthenticatedRoute>},
     {path:"/verify", element: <AuthenticatedRoute><AdminRoute><Layout><HomePage/></Layout></AdminRoute></AuthenticatedRoute>},
     {path:"/allrides", element: <AuthenticatedRoute><AdminRoute><Layout><AllRidesPage/></Layout></AdminRoute></AuthenticatedRoute>},
     {path:"/newrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
