@@ -51,6 +51,21 @@ namespace API_gateway.Controllers
                 return BadRequest(ex);
             }
         }
+        [HttpGet("{driverId:Guid}")]
+        //[Authorize]
+        //[Authorize(Roles = "USER")]
+        public async Task<ActionResult<List<RideDTO>>> GetRidesForDriver(Guid driverId)
+        {
+            try
+            {
+                List<RideDTO> lists = await _rideService.GetRidesForDriver(driverId);
+                return Ok(lists);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
 
         [HttpGet]
         public async Task<ActionResult<List<RideDTO>>> GetAllPendingRides()

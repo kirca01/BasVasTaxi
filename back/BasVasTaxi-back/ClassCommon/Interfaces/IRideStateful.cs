@@ -15,6 +15,7 @@ namespace ClassCommon.Interfaces
         Task DeleteRide(Guid rideId);
         Task<List<RideDTO>> GetAllPendingRides();
         Task<List<RideDTO>> GetAllRides();
+        Task<List<RideDTO>> GetRidesForDriver(Guid driverId);
         Task<List<RideDTO>> GetRidesForUser(Guid userId);
     }
 }

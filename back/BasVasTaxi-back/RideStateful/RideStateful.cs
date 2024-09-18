@@ -248,6 +248,38 @@ namespace RideStateful
             return userRides;
         }
 
+        public async Task<List<RideDTO>> GetRidesForDriver(Guid driverId)
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            var driverRides = new List<RideDTO>();
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var enumerator = (await ridesDict.CreateEnumerableAsync(transaction)).GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(default))
+                {
+                    var rideDict = enumerator.Current.Value;
+
+                    if (rideDict.DriverId == driverId && rideDict.Status == RideStatus.FINISHED)
+                    {
+                        driverRides.Add(new RideDTO(rideDict));
+                    }
+                }
+            }
+
+            var ridesForUserDb = _rideDbContext.Rides
+                .Where(x => x.UserId == driverId && x.Status.Equals("FINISHED"))
+                .Select(x => new RideDTO(x))
+                .ToList();
+
+            driverRides.AddRange(ridesForUserDb);
+
+            return driverRides;
+        }
+
 
         /// <summary>
         /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
@@ -312,5 +344,7 @@ namespace RideStateful
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             }
         }
+
+        
     }
 }

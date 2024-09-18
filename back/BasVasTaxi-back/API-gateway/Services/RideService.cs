@@ -48,5 +48,10 @@ namespace API_gateway.Services
         {
             await _rideManagementService.AcceptRide(rideId, driverId);
         }
+
+        public async Task<List<RideDTO>> GetRidesForDriver(Guid driverId)
+        {
+            return await _rideManagementService.GetRidesForDriver(driverId);
+        }
     }
 }
