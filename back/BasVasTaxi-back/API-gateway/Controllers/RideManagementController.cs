@@ -22,8 +22,8 @@ namespace API_gateway.Controllers
 
 
         [HttpPost]
-        //[Authorize]
-        //[Authorize(Roles = "USER")]
+        [Authorize]
+        [Authorize(Roles = "USER")]
         public async Task<ActionResult<RideDTO>> CreateRide([FromBody] CreateRideDTO dto)
         {
             try
