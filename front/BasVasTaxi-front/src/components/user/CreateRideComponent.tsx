@@ -1,6 +1,7 @@
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, {useContext, useState} from "react";
 import axios from "axios";
+import {AuthContext} from "../../security/AuthContext.tsx";
 
 const modalStyle = {
     position: 'absolute',
@@ -43,7 +44,8 @@ const CreateRideComponent = () => {
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [responseData, setResponseData] = useState(null);
-    const [open, setOpen] = useState(false); // State for modal visibility
+    const [open, setOpen] = useState(false);
+    const { id, role } = useContext(AuthContext);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -52,13 +54,18 @@ const CreateRideComponent = () => {
         e.preventDefault();
 
         const newRide = {
-            userID,
+            userID : id,
             startAddress,
             endAddress
         };
 
         try {
-            const response = await axios.post('http://localhost:8241/RideManagement/CreateRide', newRide);
+            const jwtToken = localStorage.getItem("jwtToken");
+            const response = await axios.post('http://localhost:8241/RideManagement/CreateRide', newRide, {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}` // Dodaj Authorization header
+                }
+            });
             setSuccess(`Ride created successfully!`);
             setError('');
 
@@ -75,14 +82,6 @@ const CreateRideComponent = () => {
             <Box sx={formStyle}>
                 <Typography variant="h4" sx={{ mb: 2 }}>Create a Ride</Typography>
                 <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-                    <TextField
-                        fullWidth
-                        label="User ID"
-                        variant="outlined"
-                        value={userID}
-                        onChange={(e) => setUserID(e.target.value)}
-                        required
-                    />
                     <TextField
                         fullWidth
                         label="Start Address"
@@ -116,7 +115,6 @@ const CreateRideComponent = () => {
                 )}
             </Box>
 
-            {/* Modal for showing the response data */}
             <Modal
                 open={open}
                 onClose={handleClose}

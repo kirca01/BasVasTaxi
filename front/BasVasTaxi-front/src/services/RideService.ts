@@ -41,15 +41,4 @@ export class RideService {
             });
     }
 
-    public async CreateRide(): Promise<object> {
-        return axios.post(environment + `/RideManagement/CreateRide/`)
-            .then(res => {
-                if (res.status === 200){
-                    return res.data
-                }
-            }).catch((error) => {
-                console.log(error);
-                return {}
-            });
-    }
 }
