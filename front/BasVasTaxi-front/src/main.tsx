@@ -19,6 +19,7 @@ import AllRidesPage from "./pages/AllRidesPage.tsx";
 import OldRidesPage from "./pages/OldRidesPage.tsx";
 import OldRidesDriverPage from "./pages/OldRidesDriverPage.tsx";
 import VerifyUserPage from "./pages/VerifyUserPage.tsx";
+import AcceptRidePage from "./pages/AcceptRidePage.tsx";
 
 
 const theme = createTheme({
@@ -41,7 +42,7 @@ const router = createBrowserRouter([
     {path:"/history", element: <AuthenticatedRoute><UserRoute><Layout><OldRidesPage/></Layout></UserRoute></AuthenticatedRoute>},
     {path:"/verify", element: <AuthenticatedRoute><AdminRoute><Layout><VerifyUserPage/></Layout></AdminRoute></AuthenticatedRoute>},
     {path:"/allrides", element: <AuthenticatedRoute><AdminRoute><Layout><AllRidesPage/></Layout></AdminRoute></AuthenticatedRoute>},
-    {path:"/newrides", element: <AuthenticatedRoute><DriverRoute><Layout><HomePage/></Layout></DriverRoute></AuthenticatedRoute>},
+    {path:"/newrides", element: <AuthenticatedRoute><DriverRoute><Layout><AcceptRidePage/></Layout></DriverRoute></AuthenticatedRoute>},
     {path:"/oldrides", element: <AuthenticatedRoute><DriverRoute><Layout><OldRidesDriverPage/></Layout></DriverRoute></AuthenticatedRoute>},
 
     {path:"*", element: <Navigate to="/signin" replace />},

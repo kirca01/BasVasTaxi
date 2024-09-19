@@ -111,7 +111,8 @@ namespace API_gateway.Controllers
         }
 
         [HttpPut("accept-ride/{rideId:Guid}/driver/{driverId:Guid}")]
-        [Authorize(Roles = "DRIVER")]
+        [Authorize]
+        //[Authorize(Roles = "DRIVER")]
         public async Task<ActionResult> AcceptRide(Guid rideId, Guid driverId)
         {
             try
@@ -124,6 +125,8 @@ namespace API_gateway.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
 
     }
 }
