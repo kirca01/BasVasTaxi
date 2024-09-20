@@ -53,5 +53,15 @@ namespace API_gateway.Services
         {
             return await _rideManagementService.GetRidesForDriver(driverId);
         }
+
+        public async Task FinishRide(Guid rideId)
+        {
+            await _rideManagementService.FinishRide(rideId);
+        }
+
+        public async Task<Ride> GetRideStatus(Guid rideId)
+        {
+            return await _rideManagementService.GetRideStatus(rideId);
+        }
     }
 }
