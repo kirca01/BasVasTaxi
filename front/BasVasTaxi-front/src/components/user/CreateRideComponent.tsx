@@ -1,7 +1,9 @@
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import React, {useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import {AuthContext} from "../../security/AuthContext.tsx";
+import { AuthContext } from "../../security/AuthContext.tsx";
+import RideCountdown from "../shared/RideCountdown.tsx";
+import {useNavigate} from "react-router-dom";
 
 const modalStyle = {
     position: 'absolute',
@@ -20,7 +22,7 @@ const formWrapperStyle = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',  // To make sure it takes up the whole height of the viewport
+    height: '100vh',
     backgroundColor: '#f5f5f5'
 };
 
@@ -43,18 +45,22 @@ const CreateRideComponent = () => {
     const [endAddress, setEndAddress] = useState('');
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
-    const [responseData, setResponseData] = useState(null);
+    const [responseData, setResponseData] = useState(null); // Store response data
     const [open, setOpen] = useState(false);
-    const { id, role } = useContext(AuthContext);
+    const { id } = useContext(AuthContext);
+    const navigate=useNavigate();
 
     const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setOpen(false);
+        navigate(0);
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newRide = {
-            userID : id,
+            userID: id,
             startAddress,
             endAddress
         };
@@ -63,14 +69,17 @@ const CreateRideComponent = () => {
             const jwtToken = localStorage.getItem("jwtToken");
             const response = await axios.post('http://localhost:8241/RideManagement/CreateRide', newRide, {
                 headers: {
-                    Authorization: `Bearer ${jwtToken}` // Dodaj Authorization header
+                    Authorization: `Bearer ${jwtToken}`
                 }
+            }).then( res => {
+                setSuccess('Ride created successfully!');
+                setError('');
+                setResponseData(res.data);
+                localStorage.setItem("rideId", res.data.id);
+                handleOpen();
+                console.log(res.data)
             });
-            setSuccess(`Ride created successfully!`);
-            setError('');
 
-            setResponseData(response.data); // Save the response data
-            handleOpen(); // Open the modal
         } catch (err) {
             setError('Failed to create the ride. Please try again.');
             setSuccess('');
@@ -126,13 +135,15 @@ const CreateRideComponent = () => {
                         Ride Created Successfully!
                     </Typography>
                     {responseData && (
-                        <div>
-                            <Typography>Start Address: {responseData.startAddress}</Typography>
-                            <Typography>End Address: {responseData.endAddress}</Typography>
-                            <Typography>Price: {responseData.price}</Typography>
-                            <Typography>Travel Time: {responseData.travelTime} min</Typography>
-                            <Typography>Wait Time: {responseData.waitTime} min</Typography>
-                        </div>
+                        <>
+                            <div>
+                                <Typography>Start Address: {responseData.startAddress}</Typography>
+                                <Typography>End Address: {responseData.endAddress}</Typography>
+                                <Typography>Price: {responseData.price}</Typography>
+                                <Typography>Travel Time: {responseData.travelTime} min</Typography>
+                                <Typography>Wait Time: {responseData.waitTime} min</Typography>
+                            </div>
+                        </>
                     )}
                     <Button onClick={handleClose} variant="contained" sx={{ mt: 2 }}>
                         OK

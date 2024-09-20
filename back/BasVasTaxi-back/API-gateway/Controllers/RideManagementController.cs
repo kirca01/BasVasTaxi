@@ -126,7 +126,48 @@ namespace API_gateway.Controllers
             }
         }
 
+        [HttpPut("finish-ride/{rideId:Guid}")]
+        [Authorize]
+        //[Authorize(Roles = "DRIVER")]
+        public async Task<ActionResult> FinishRide(Guid rideId)
+        {
+            try
+            {
+                await _rideService.FinishRide(rideId);
+                return Ok("Ride accepted by driver");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
+        [HttpGet("{rideId:Guid}/status")]
+        [Authorize]
+        public async Task<ActionResult<RideStatusDTO>> GetRideStatus(Guid rideId)
+        {
+            try
+            {
+                var ride = await _rideService.GetRideStatus(rideId);
+                if (ride == null)
+                {
+                    return NotFound();
+                }
 
+                var statusDto = new RideStatusDTO
+                {
+                    Id = ride.Id,
+                    Status = ride.Status,
+                    WaitTime = ride.WaitTime,
+                    TravelTime = ride.TravelTime
+                };
+
+                return Ok(statusDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

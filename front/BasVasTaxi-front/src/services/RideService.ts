@@ -40,5 +40,39 @@ export class RideService {
                 return {}
             });
     }
+    public async GetStatusForRide(id: string): Promise<object> {
+        const jwtToken = localStorage.getItem("jwtToken")
+        return axios.get(environment + `/RideManagement/GetRideStatus/${id}/status`, {
+            headers: {
+                Authorization: `Bearer ${jwtToken}`
+            }
+        })
+            .then(res => {
+                if (res.status === 200){
+                    return res.data
+                }
+            }).catch((error) => {
+                console.log(error);
+                return {}
+            });
+    }
+
+    public async FinishRide(id: string): Promise<object> {
+        const jwtToken = localStorage.getItem("jwtToken")
+        return axios.put(environment + `/RideManagement/FinishRide/finish-ride/${id}`,  {}, {
+            headers: {
+                Authorization: `Bearer ${jwtToken}`
+            }
+        })
+            .then(res => {
+                if (res.status === 200){
+                    return res.data
+                }
+            }).catch((error) => {
+                console.log(error);
+                return {}
+            });
+    }
+
 
 }

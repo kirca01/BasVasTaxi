@@ -137,7 +137,7 @@ namespace UserStateful
                 while (await enumerator.MoveNextAsync(default))
                 {
                     var userDict = enumerator.Current.Value;
-                    if (userDict != null && !userDict.IsActivated)
+                    if (userDict != null && !userDict.IsActivated && userDict.Role == UserRole.DRIVER)
                     {
                         nonActivatedUsers.Add(new UserDTO(userDict));
                     }

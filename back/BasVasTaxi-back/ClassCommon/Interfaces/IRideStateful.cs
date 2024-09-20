@@ -1,4 +1,5 @@
 ﻿using ClassCommon.DTOs;
+using ClassCommon.Models;
 using Microsoft.ServiceFabric.Services.Remoting;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,11 @@ namespace ClassCommon.Interfaces
         Task AcceptRide(Guid rideId, Guid driverId);
         Task<RideDTO> CreateRide(CreateRideDTO dto);
         Task DeleteRide(Guid rideId);
+        Task FinishRide(Guid rideId);
         Task<List<RideDTO>> GetAllPendingRides();
         Task<List<RideDTO>> GetAllRides();
         Task<List<RideDTO>> GetRidesForDriver(Guid driverId);
         Task<List<RideDTO>> GetRidesForUser(Guid userId);
+        Task<Ride> GetRideStatus(Guid rideId);
     }
 }

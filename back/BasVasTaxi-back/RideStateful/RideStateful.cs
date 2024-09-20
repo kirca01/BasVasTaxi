@@ -64,6 +64,44 @@ namespace RideStateful
             }
         }
 
+        public async Task FinishRide(Guid rideId)
+        {
+            var stateManager = this.StateManager;
+            var ridesDict = await stateManager.GetOrAddAsync<IReliableDictionary<Guid, Ride>>("rideDictionary");
+
+            using (var transaction = stateManager.CreateTransaction())
+            {
+                var ride = await GetRideById(rideId) ?? throw new InvalidOperationException();
+
+                if (ride.Status != RideStatus.CONFIRMED)
+                {
+                    throw new InvalidOperationException("Ride is already accepted or finished.");
+                }
+
+                ride.Status = RideStatus.FINISHED;
+
+                await ridesDict.AddOrUpdateAsync(transaction, rideId, ride, (k, v) => ride);
+                await transaction.CommitAsync();
+            }
+
+            var rideFromDb = await _rideDbContext.Rides.FindAsync(rideId);
+            if (rideFromDb != null)
+            {
+
+                rideFromDb.Status = RideStatus.FINISHED;
+                await _rideDbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Ride with ID {rideId} not found in the database.");
+            }
+        }
+
+        public async Task<Ride> GetRideStatus(Guid rideId)
+        {
+            return await GetRideById(rideId);
+        }
+
         private async Task<Ride> GetRideById(Guid id)
         {
             var stateManager = this.StateManager;
@@ -88,6 +126,7 @@ namespace RideStateful
         public async Task<RideDTO> CreateRide(CreateRideDTO dto)
         {
             Ride ride = new Ride();
+            ride.Id = Guid.NewGuid();
             ride.StartAddress = dto.StartAddress;
             ride.EndAddress = dto.EndAddress;
             ride.UserId = dto.UserID;

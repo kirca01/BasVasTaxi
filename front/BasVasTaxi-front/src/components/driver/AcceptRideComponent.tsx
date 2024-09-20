@@ -3,11 +3,13 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../../security/AuthContext.tsx";
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import RideCountdown from "../shared/RideCountdown.tsx";
 
 const AcceptRideComponent = () => {
     const [pendingRides, setPendingRides] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [selectedRide, setSelectedRide] = useState(null);
     const { id, role } = useContext(AuthContext);
 
     useEffect(() => {
@@ -24,17 +26,20 @@ const AcceptRideComponent = () => {
         fetchPendingRides();
     }, []);
 
-    const handleAcceptRide = async (rideId, driverId) => {
+    const handleAcceptRide = async (ride) => {
         try {
             const jwtToken = localStorage.getItem("jwtToken");
-            await axios.put(`http://localhost:8241/RideManagement/AcceptRide/accept-ride/${rideId}/driver/${driverId}`, {}, {
+            await axios.put(`http://localhost:8241/RideManagement/AcceptRide/accept-ride/${ride.id}/driver/${id}`, {}, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`
                 }
             });
-            setSuccess(`Ride ${rideId} accepted successfully!`);
+
+            // Set the accepted ride details
+            setSelectedRide(ride);
+            setSuccess(`Ride ${ride.id} accepted successfully!`);
             setError('');
-            setPendingRides((prev) => prev.filter((ride) => ride.id !== rideId));
+            setPendingRides((prev) => prev.filter((r) => r.id !== ride.id));
         } catch (err) {
             setError('Failed to accept the ride.');
             setSuccess('');
@@ -80,7 +85,7 @@ const AcceptRideComponent = () => {
                                     <Button
                                         variant="contained"
                                         color="primary"
-                                        onClick={() => handleAcceptRide(ride.id, id)}
+                                        onClick={() => handleAcceptRide(ride)}  // Pass full ride object
                                         sx={{ fontWeight: 'bold', ml: 2 }}
                                     >
                                         Accept
@@ -91,6 +96,7 @@ const AcceptRideComponent = () => {
                         ))
                     )}
                 </List>
+
             </Paper>
         </Box>
     );
